@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>D&D Inventory Sheet</title>
+  <style>
+    /* ── Base ─────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #1a1208;
+      --surface:   #2b1f0e;
+      --surface2:  #3a2a12;
+      --border:    #6b4c1e;
+      --gold:      #c9901e;
+      --gold-lt:   #f0c060;
+      --text:      #e8d8b0;
+      --text-dim:  #a08858;
+      --red:       #c0392b;
+      --red-lt:    #e74c3c;
+      --green:     #27ae60;
+      --green-lt:  #2ecc71;
+      --radius:    6px;
+      --shadow:    0 2px 8px rgba(0,0,0,.6);
+    }
+
+    body {
+      font-family: 'Georgia', serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    h1, h2, h3 { font-family: 'Georgia', serif; letter-spacing: .04em; }
+
+    /* ── Page header ──────────────────────────────── */
+    .page-header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+    .page-header h1 {
+      font-size: 2.2rem;
+      color: var(--gold-lt);
+      text-shadow: 0 0 18px rgba(201,144,30,.5);
+    }
+    .page-header p { color: var(--text-dim); margin-top: 4px; font-style: italic; }
+
+    /* ── Card ─────────────────────────────────────── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 22px;
+      margin-bottom: 18px;
+      box-shadow: var(--shadow);
+    }
+    .card h2 {
+      font-size: 1.1rem;
+      color: var(--gold);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 8px;
+      margin-bottom: 14px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    /* ── Two-column layout ────────────────────────── */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    @media (max-width: 700px) { .two-col { grid-template-columns: 1fr; } }
+
+    /* ── Form fields ──────────────────────────────── */
+    .field-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .field-row label {
+      width: 130px;
+      flex-shrink: 0;
+      font-size: .85rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+    input[type="text"],
+    input[type="number"],
+    select,
+    textarea {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-family: inherit;
+      font-size: .95rem;
+      padding: 5px 10px;
+      flex: 1;
+      outline: none;
+      transition: border-color .15s;
+    }
+    input[type="text"]:focus,
+    input[type="number"]:focus,
+    select:focus,
+    textarea:focus { border-color: var(--gold); }
+    input[type="number"] { width: 80px; flex: 0 0 80px; }
+    select option { background: var(--surface2); }
+
+    /* ── Currency ─────────────────────────────────── */
+    .currency-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+    }
+    @media (max-width: 500px) { .currency-grid { grid-template-columns: repeat(3, 1fr); } }
+    .coin-block {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px 8px;
+      text-align: center;
+    }
+    .coin-block .coin-label {
+      font-size: .75rem;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin-bottom: 6px;
+    }
+    .coin-block.pp .coin-label { color: #c0c0e0; }
+    .coin-block.gp .coin-label { color: var(--gold-lt); }
+    .coin-block.ep .coin-label { color: #c0d8c0; }
+    .coin-block.sp .coin-label { color: #b0b8c0; }
+    .coin-block.cp .coin-label { color: #b87333; }
+    .coin-block input[type="number"] {
+      width: 100%;
+      flex: none;
+      text-align: center;
+      font-size: 1.1rem;
+      font-weight: bold;
+    }
+    .coin-block .coin-gp-equiv {
+      font-size: .7rem;
+      color: var(--text-dim);
+      margin-top: 4px;
+    }
+    .currency-total {
+      margin-top: 10px;
+      text-align: right;
+      font-size: .9rem;
+      color: var(--text-dim);
+    }
+    .currency-total span { color: var(--gold-lt); font-weight: bold; }
+
+    /* ── Weight bar ───────────────────────────────── */
+    .weight-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 6px;
+    }
+    .weight-bar-wrap {
+      flex: 1;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      height: 14px;
+      overflow: hidden;
+    }
+    .weight-bar {
+      height: 100%;
+      border-radius: 99px;
+      background: var(--green);
+      transition: width .3s, background .3s;
+    }
+    .weight-label { font-size: .85rem; color: var(--text-dim); white-space: nowrap; }
+    .weight-label span { color: var(--text); }
+
+    /* ── Item table ───────────────────────────────── */
+    .table-wrap { overflow-x: auto; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .9rem;
+    }
+    thead th {
+      background: var(--surface2);
+      color: var(--gold);
+      text-transform: uppercase;
+      font-size: .75rem;
+      letter-spacing: .07em;
+      padding: 8px 10px;
+      text-align: left;
+      border-bottom: 2px solid var(--border);
+      white-space: nowrap;
+    }
+    tbody tr { border-bottom: 1px solid rgba(107,76,30,.3); }
+    tbody tr:hover { background: rgba(255,255,255,.03); }
+    tbody td { padding: 6px 10px; vertical-align: middle; }
+    tbody td input[type="text"],
+    tbody td input[type="number"],
+    tbody td select {
+      width: 100%;
+      flex: none;
+      padding: 3px 6px;
+      font-size: .88rem;
+    }
+    tbody td input[type="number"] { width: 68px; }
+
+    /* Equip toggle */
+    .equip-btn {
+      cursor: pointer;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text-dim);
+      padding: 3px 8px;
+      font-size: .8rem;
+      transition: background .15s, color .15s, border-color .15s;
+    }
+    .equip-btn.equipped {
+      background: rgba(39,174,96,.2);
+      border-color: var(--green);
+      color: var(--green-lt);
+    }
+
+    /* Delete */
+    .del-btn {
+      cursor: pointer;
+      background: none;
+      border: 1px solid transparent;
+      border-radius: var(--radius);
+      color: var(--text-dim);
+      padding: 3px 6px;
+      font-size: 1rem;
+      line-height: 1;
+      transition: color .15s, border-color .15s;
+    }
+    .del-btn:hover { color: var(--red-lt); border-color: var(--red); }
+
+    /* ── Buttons ──────────────────────────────────── */
+    .btn {
+      cursor: pointer;
+      border: none;
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: .9rem;
+      padding: 8px 18px;
+      transition: filter .15s;
+    }
+    .btn:hover { filter: brightness(1.15); }
+    .btn-gold { background: var(--gold); color: #1a1208; font-weight: bold; }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+    }
+    .btn-outline:hover { border-color: var(--gold); color: var(--gold-lt); }
+    .btn-red { background: var(--red); color: #fff; }
+
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+
+    /* ── Notes ────────────────────────────────────── */
+    textarea { width: 100%; min-height: 80px; resize: vertical; }
+
+    /* ── Notification toast ───────────────────────── */
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--surface2);
+      border: 1px solid var(--gold);
+      color: var(--gold-lt);
+      padding: 10px 18px;
+      border-radius: var(--radius);
+      font-size: .9rem;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity .3s, transform .3s;
+      pointer-events: none;
+      z-index: 100;
+    }
+    #toast.show { opacity: 1; transform: translateY(0); }
+
+    /* ── Attunement ───────────────────────────────── */
+    .attunement-counter {
+      display: inline-block;
+      margin-left: 10px;
+      font-size: .85rem;
+      color: var(--text-dim);
+    }
+    .attunement-counter span { color: var(--gold-lt); }
+
+    /* ── Section divider ──────────────────────────── */
+    .section-divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 6px 0 14px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>⚔️ D&amp;D Inventory Sheet</h1>
+  <p>Track your character's gear, currency, and encumbrance</p>
+</div>
+
+<!-- ── Character Info ──────────────────────────────── -->
+<div class="card">
+  <h2>Character Info</h2>
+  <div class="two-col">
+    <div>
+      <div class="field-row">
+        <label>Character Name</label>
+        <input type="text" id="charName" placeholder="Thandros Ashveil" />
+      </div>
+      <div class="field-row">
+        <label>Class / Level</label>
+        <input type="text" id="charClass" placeholder="Paladin 20" />
+      </div>
+      <div class="field-row">
+        <label>Race</label>
+        <input type="text" id="charRace" placeholder="Half-Elf" />
+      </div>
+    </div>
+    <div>
+      <div class="field-row">
+        <label>Background</label>
+        <input type="text" id="charBackground" placeholder="Noble" />
+      </div>
+      <div class="field-row">
+        <label>STR Score</label>
+        <input type="number" id="strScore" min="1" max="30" value="10" />
+        <small style="color:var(--text-dim); font-size:.8rem; margin-left:4px;">Carry = STR × 15 lb</small>
+      </div>
+      <div class="field-row">
+        <label>Player Name</label>
+        <input type="text" id="playerName" placeholder="Your name" />
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Currency ───────────────────────────────────── -->
+<div class="card">
+  <h2>Currency</h2>
+  <div class="currency-grid">
+    <div class="coin-block pp">
+      <div class="coin-label">🪙 Platinum</div>
+      <input type="number" id="coinPP" min="0" value="0" />
+      <div class="coin-gp-equiv">= 10 gp each</div>
+    </div>
+    <div class="coin-block gp">
+      <div class="coin-label">🥇 Gold</div>
+      <input type="number" id="coinGP" min="0" value="0" />
+      <div class="coin-gp-equiv">= 1 gp each</div>
+    </div>
+    <div class="coin-block ep">
+      <div class="coin-label">🪙 Electrum</div>
+      <input type="number" id="coinEP" min="0" value="0" />
+      <div class="coin-gp-equiv">= 0.5 gp each</div>
+    </div>
+    <div class="coin-block sp">
+      <div class="coin-label">🥈 Silver</div>
+      <input type="number" id="coinSP" min="0" value="0" />
+      <div class="coin-gp-equiv">= 0.1 gp each</div>
+    </div>
+    <div class="coin-block cp">
+      <div class="coin-label">🟤 Copper</div>
+      <input type="number" id="coinCP" min="0" value="0" />
+      <div class="coin-gp-equiv">= 0.01 gp each</div>
+    </div>
+  </div>
+  <div class="currency-total">Total value: <span id="totalGP">0.00</span> gp</div>
+</div>
+
+<!-- ── Encumbrance ─────────────────────────────────── -->
+<div class="card">
+  <h2>Encumbrance</h2>
+  <div class="weight-row">
+    <div class="weight-bar-wrap">
+      <div class="weight-bar" id="weightBar" style="width:0%"></div>
+    </div>
+    <div class="weight-label">
+      <span id="currentWeight">0</span> / <span id="maxCarry">150</span> lb
+    </div>
+  </div>
+  <p id="encumbranceStatus" style="font-size:.8rem;color:var(--text-dim);margin-top:6px;"></p>
+</div>
+
+<!-- ── Inventory Table ─────────────────────────────── -->
+<div class="card">
+  <h2>
+    Inventory
+    <span class="attunement-counter">Attuned: <span id="attuneCount">0</span>/3</span>
+  </h2>
+  <div class="table-wrap">
+    <table id="inventoryTable">
+      <thead>
+        <tr>
+          <th style="width:32px">#</th>
+          <th>Item Name</th>
+          <th>Type</th>
+          <th style="width:60px">Qty</th>
+          <th style="width:80px">Wt (lb)</th>
+          <th style="width:90px">Value (gp)</th>
+          <th>Notes</th>
+          <th style="width:70px">Equipped</th>
+          <th style="width:80px">Attuned</th>
+          <th style="width:40px"></th>
+        </tr>
+      </thead>
+      <tbody id="inventoryBody"></tbody>
+      <tfoot>
+        <tr style="border-top:2px solid var(--border);">
+          <td colspan="3" style="text-align:right;color:var(--text-dim);font-size:.8rem;padding:6px 10px;">Totals →</td>
+          <td id="totalQty" style="font-weight:bold;padding:6px 10px;">0</td>
+          <td id="totalWeight" style="font-weight:bold;padding:6px 10px;">0</td>
+          <td id="totalValue" style="font-weight:bold;padding:6px 10px;">0.00</td>
+          <td colspan="4"></td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-gold" onclick="addItem()">+ Add Item</button>
+    <button class="btn btn-outline" onclick="addSampleItems()">Load Sample Items</button>
+  </div>
+</div>
+
+<!-- ── Notes ──────────────────────────────────────── -->
+<div class="card">
+  <h2>Notes / Quest Items</h2>
+  <textarea id="notes" placeholder="Mysterious key from the crypt… the merchant's sealed letter… Party loot TBD…"></textarea>
+</div>
+
+<!-- ── Save / Load ────────────────────────────────── -->
+<div class="card" style="background:transparent;border-color:transparent;box-shadow:none;padding:0;">
+  <div class="btn-row">
+    <button class="btn btn-gold" onclick="saveData()">💾 Save to Browser</button>
+    <button class="btn btn-outline" onclick="loadData()">📂 Load Saved</button>
+    <button class="btn btn-outline" onclick="exportJSON()">⬇ Export JSON</button>
+    <button class="btn btn-outline" onclick="importJSON()">⬆ Import JSON</button>
+    <button class="btn btn-red" onclick="clearAll()">🗑 Clear All</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- Hidden file input for import -->
+<input type="file" id="fileInput" accept=".json" style="display:none" onchange="handleFileImport(event)" />
+
+<script>
+  // ── Item types ────────────────────────────────────
+  const ITEM_TYPES = [
+    'Weapon', 'Armor', 'Shield', 'Ammunition',
+    'Potion', 'Scroll', 'Wand / Staff / Rod',
+    'Ring', 'Wondrous Item', 'Tool', 'Adventuring Gear',
+    'Trade Good', 'Container', 'Key / Document', 'Treasure', 'Other'
+  ];
+
+  // ── State ─────────────────────────────────────────
+  let items = [];
+  let nextId = 1;
+
+  // ── Render ────────────────────────────────────────
+  function render() {
+    const tbody = document.getElementById('inventoryBody');
+    tbody.innerHTML = '';
+
+    let totalQty = 0, totalWeight = 0, totalValue = 0, attuned = 0;
+
+    items.forEach((item, idx) => {
+      const qty = parseFloat(item.qty) || 0;
+      const wt  = parseFloat(item.wt)  || 0;
+      const val = parseFloat(item.val) || 0;
+
+      totalQty    += qty;
+      totalWeight += qty * wt;
+      totalValue  += qty * val;
+      if (item.attuned) attuned++;
+
+      const tr = document.createElement('tr');
+      tr.dataset.id = item.id;
+
+      // Build type <select>
+      const typeOptions = ITEM_TYPES.map(t =>
+        `<option value="${t}" ${item.type === t ? 'selected' : ''}>${t}</option>`
+      ).join('');
+
+      tr.innerHTML = `
+        <td style="color:var(--text-dim);font-size:.8rem">${idx + 1}</td>
+        <td><input type="text"   value="${esc(item.name)}"  placeholder="Item name"  onchange="updateItem(${item.id},'name',this.value)" /></td>
+        <td><select onchange="updateItem(${item.id},'type',this.value)">${typeOptions}</select></td>
+        <td><input type="number" value="${item.qty}"  min="0" onchange="updateItem(${item.id},'qty',this.value)" /></td>
+        <td><input type="number" value="${item.wt}"   min="0" step="0.1" onchange="updateItem(${item.id},'wt',this.value)" /></td>
+        <td><input type="number" value="${item.val}"  min="0" step="0.01" onchange="updateItem(${item.id},'val',this.value)" /></td>
+        <td><input type="text"   value="${esc(item.notes)}" placeholder="Notes…" onchange="updateItem(${item.id},'notes',this.value)" /></td>
+        <td style="text-align:center">
+          <button class="equip-btn ${item.equipped ? 'equipped' : ''}"
+                  onclick="toggleBool(${item.id},'equipped')">
+            ${item.equipped ? '✔ Yes' : 'No'}
+          </button>
+        </td>
+        <td style="text-align:center">
+          <button class="equip-btn ${item.attuned ? 'equipped' : ''}"
+                  onclick="toggleBool(${item.id},'attuned')">
+            ${item.attuned ? '✔ Yes' : 'No'}
+          </button>
+        </td>
+        <td><button class="del-btn" onclick="deleteItem(${item.id})" title="Remove">✕</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    // Totals footer
+    document.getElementById('totalQty').textContent    = totalQty;
+    document.getElementById('totalWeight').textContent = totalWeight.toFixed(2);
+    document.getElementById('totalValue').textContent  = totalValue.toFixed(2);
+
+    // Encumbrance
+    const str     = parseInt(document.getElementById('strScore').value) || 10;
+    const maxCarry = str * 15;
+    document.getElementById('maxCarry').textContent   = maxCarry;
+    document.getElementById('currentWeight').textContent = totalWeight.toFixed(1);
+
+    const pct = Math.min(totalWeight / maxCarry, 1);
+    const bar = document.getElementById('weightBar');
+    bar.style.width = (pct * 100) + '%';
+
+    const encStatus = document.getElementById('encumbranceStatus');
+    if (totalWeight === 0) {
+      bar.style.background = 'var(--green)';
+      encStatus.textContent = '';
+    } else if (totalWeight <= str * 5) {
+      bar.style.background = 'var(--green)';
+      encStatus.textContent = 'Lightly loaded — no penalty.';
+    } else if (totalWeight <= str * 10) {
+      bar.style.background = '#d4ac0d';
+      encStatus.textContent = '⚠ Encumbered — speed −10 ft.';
+    } else if (totalWeight <= maxCarry) {
+      bar.style.background = '#e67e22';
+      encStatus.textContent = '⚠ Heavily Encumbered — speed −20 ft, disadvantage on Str/Dex/Con checks and saves.';
+    } else {
+      bar.style.background = 'var(--red)';
+      encStatus.textContent = '🚫 Over carrying capacity! You cannot move.';
+    }
+
+    // Attunement
+    document.getElementById('attuneCount').textContent = attuned;
+    document.getElementById('attuneCount').style.color = attuned >= 3 ? 'var(--red-lt)' : 'var(--gold-lt)';
+
+    // Currency total
+    updateCurrencyTotal();
+  }
+
+  function updateCurrencyTotal() {
+    const pp = parseFloat(document.getElementById('coinPP').value) || 0;
+    const gp = parseFloat(document.getElementById('coinGP').value) || 0;
+    const ep = parseFloat(document.getElementById('coinEP').value) || 0;
+    const sp = parseFloat(document.getElementById('coinSP').value) || 0;
+    const cp = parseFloat(document.getElementById('coinCP').value) || 0;
+    const total = pp * 10 + gp + ep * 0.5 + sp * 0.1 + cp * 0.01;
+    document.getElementById('totalGP').textContent = total.toFixed(2);
+  }
+
+  // ── CRUD ──────────────────────────────────────────
+  function addItem(defaults = {}) {
+    items.push({
+      id:       nextId++,
+      name:     defaults.name  || '',
+      type:     defaults.type  || 'Adventuring Gear',
+      qty:      defaults.qty   ?? 1,
+      wt:       defaults.wt    ?? 0,
+      val:      defaults.val   ?? 0,
+      notes:    defaults.notes || '',
+      equipped: defaults.equipped || false,
+      attuned:  defaults.attuned  || false,
+    });
+    render();
+  }
+
+  function updateItem(id, field, value) {
+    const item = items.find(i => i.id === id);
+    if (!item) return;
+    item[field] = value;
+    if (['qty','wt','val'].includes(field)) render();
+  }
+
+  function toggleBool(id, field) {
+    const item = items.find(i => i.id === id);
+    if (!item) return;
+    if (field === 'attuned' && !item.attuned) {
+      const attuned = items.filter(i => i.attuned).length;
+      if (attuned >= 3) { showToast('⚠ Already attuned to 3 items (maximum)!'); return; }
+    }
+    item[field] = !item[field];
+    render();
+  }
+
+  function deleteItem(id) {
+    items = items.filter(i => i.id !== id);
+    render();
+  }
+
+  // ── Sample data ───────────────────────────────────
+  function addSampleItems() {
+    if (items.length > 0 && !confirm('This will add sample items to your existing list. Continue?')) return;
+    const samples = [
+      { name: 'Longsword +2',         type: 'Weapon',           qty: 1,  wt: 3,    val: 400,   notes: 'Silvered blade; +2 to attack & damage', equipped: true,  attuned: true  },
+      { name: 'Plate Armor',          type: 'Armor',            qty: 1,  wt: 65,   val: 1500,  notes: 'AC 18',                                  equipped: true,  attuned: false },
+      { name: 'Shield',               type: 'Shield',           qty: 1,  wt: 6,    val: 10,    notes: '+2 AC',                                  equipped: true,  attuned: false },
+      { name: 'Cloak of Protection',  type: 'Wondrous Item',    qty: 1,  wt: 1,    val: 3500,  notes: '+1 AC and saving throws',                equipped: true,  attuned: true  },
+      { name: 'Healing Potion',       type: 'Potion',           qty: 4,  wt: 0.5,  val: 50,    notes: '2d4+2 HP',                               equipped: false, attuned: false },
+      { name: 'Greater Healing Pot.', type: 'Potion',           qty: 2,  wt: 0.5,  val: 150,   notes: '4d4+4 HP',                               equipped: false, attuned: false },
+      { name: 'Arrows',               type: 'Ammunition',       qty: 40, wt: 0.05, val: 0.05,  notes: 'Quiver of 20 = 1 lb',                    equipped: false, attuned: false },
+      { name: 'Rope, Hempen (50 ft)', type: 'Adventuring Gear', qty: 1,  wt: 10,   val: 1,     notes: '',                                       equipped: false, attuned: false },
+      { name: 'Tinderbox',            type: 'Adventuring Gear', qty: 1,  wt: 1,    val: 0.5,   notes: '',                                       equipped: false, attuned: false },
+      { name: 'Rations (10 days)',    type: 'Adventuring Gear', qty: 1,  wt: 20,   val: 5,     notes: '1 day = 2 lb / 0.5 gp',                  equipped: false, attuned: false },
+      { name: 'Backpack',             type: 'Container',        qty: 1,  wt: 5,    val: 2,     notes: 'Holds 30 lb / 1 cu ft',                  equipped: true,  attuned: false },
+      { name: 'Torch',                type: 'Adventuring Gear', qty: 6,  wt: 1,    val: 0.01,  notes: '1 hr light; 20 ft bright, 20 ft dim',    equipped: false, attuned: false },
+    ];
+    samples.forEach(s => addItem(s));
+    document.getElementById('strScore').value = 18;
+    document.getElementById('coinGP').value   = 245;
+    document.getElementById('coinSP').value   = 13;
+    document.getElementById('coinCP').value   = 7;
+    document.getElementById('charName').value = 'Thandros Ashveil';
+    document.getElementById('charClass').value = 'Paladin 20';
+    document.getElementById('charRace').value  = 'Half-Elf';
+    render();
+    showToast('Sample items loaded!');
+  }
+
+  // ── Persist ───────────────────────────────────────
+  function gatherState() {
+    return {
+      charName:       document.getElementById('charName').value,
+      charClass:      document.getElementById('charClass').value,
+      charRace:       document.getElementById('charRace').value,
+      charBackground: document.getElementById('charBackground').value,
+      strScore:       document.getElementById('strScore').value,
+      playerName:     document.getElementById('playerName').value,
+      coinPP:         document.getElementById('coinPP').value,
+      coinGP:         document.getElementById('coinGP').value,
+      coinEP:         document.getElementById('coinEP').value,
+      coinSP:         document.getElementById('coinSP').value,
+      coinCP:         document.getElementById('coinCP').value,
+      notes:          document.getElementById('notes').value,
+      items,
+      nextId,
+    };
+  }
+
+  function applyState(state) {
+    document.getElementById('charName').value       = state.charName       || '';
+    document.getElementById('charClass').value      = state.charClass      || '';
+    document.getElementById('charRace').value       = state.charRace       || '';
+    document.getElementById('charBackground').value = state.charBackground || '';
+    document.getElementById('strScore').value       = state.strScore       || 10;
+    document.getElementById('playerName').value     = state.playerName     || '';
+    document.getElementById('coinPP').value         = state.coinPP         || 0;
+    document.getElementById('coinGP').value         = state.coinGP         || 0;
+    document.getElementById('coinEP').value         = state.coinEP         || 0;
+    document.getElementById('coinSP').value         = state.coinSP         || 0;
+    document.getElementById('coinCP').value         = state.coinCP         || 0;
+    document.getElementById('notes').value          = state.notes          || '';
+    items  = state.items   || [];
+    nextId = state.nextId  || (items.length ? Math.max(...items.map(i => i.id)) + 1 : 1);
+    render();
+  }
+
+  function saveData() {
+    try {
+      localStorage.setItem('dnd-inventory', JSON.stringify(gatherState()));
+      showToast('✔ Saved to browser storage!');
+    } catch(e) {
+      showToast('❌ Could not save: ' + e.message);
+    }
+  }
+
+  function loadData() {
+    try {
+      const raw = localStorage.getItem('dnd-inventory');
+      if (!raw) { showToast('No saved data found.'); return; }
+      applyState(JSON.parse(raw));
+      showToast('✔ Loaded saved data!');
+    } catch(e) {
+      showToast('❌ Could not load: ' + e.message);
+    }
+  }
+
+  function exportJSON() {
+    const blob = new Blob([JSON.stringify(gatherState(), null, 2)], { type: 'application/json' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = (document.getElementById('charName').value || 'character') + '-inventory.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('⬇ JSON exported!');
+  }
+
+  function importJSON() {
+    document.getElementById('fileInput').click();
+  }
+
+  function handleFileImport(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        applyState(JSON.parse(ev.target.result));
+        showToast('✔ Imported successfully!');
+      } catch(err) {
+        showToast('❌ Invalid JSON file.');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  }
+
+  function clearAll() {
+    if (!confirm('Clear all data? This cannot be undone.')) return;
+    items = []; nextId = 1;
+    ['charName','charClass','charRace','charBackground','playerName','notes'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+    ['coinPP','coinGP','coinEP','coinSP','coinCP'].forEach(id => {
+      document.getElementById(id).value = 0;
+    });
+    document.getElementById('strScore').value = 10;
+    render();
+    showToast('🗑 Cleared.');
+  }
+
+  // ── Toast ─────────────────────────────────────────
+  let toastTimer;
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+  }
+
+  // ── Helpers ───────────────────────────────────────
+  function esc(str) {
+    return String(str || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  // ── Wire up live-update events ────────────────────
+  ['coinPP','coinGP','coinEP','coinSP','coinCP'].forEach(id => {
+    document.getElementById(id).addEventListener('input', updateCurrencyTotal);
+  });
+  document.getElementById('strScore').addEventListener('input', render);
+
+  // ── Auto-load on page open ────────────────────────
+  window.addEventListener('DOMContentLoaded', () => {
+    const saved = localStorage.getItem('dnd-inventory');
+    if (saved) {
+      try { applyState(JSON.parse(saved)); return; } catch(_) {}
+    }
+    render();
+  });
+</script>
+</body>
+</html>
