@@ -519,7 +519,7 @@
       const hasUrl = item.dndbeyondUrl ? ' has-url' : '';
       tr.innerHTML = `
         <td style="color:var(--text-dim);font-size:.8rem">${idx + 1}</td>
-        <td><div class="item-name-cell"><input type="text" value="${esc(item.name)}" placeholder="Item name" onchange="updateItem(${item.id},'name',this.value)" /><button class="dndbeyond-btn${hasUrl}" onclick="lookupOnDnDBeyond(${item.id})" title="Look up on D&amp;D Beyond${item.dndbeyondUrl ? ' (link saved)' : ''}">🔍</button><button class="dndbeyond-btn${hasUrl}" onclick="setDnDBeyondUrl(${item.id})" title="Set D&amp;D Beyond URL">🔗</button></div></td>
+        <td><div class="item-name-cell"><input type="text" value="${esc(item.name)}" placeholder="Item name" onchange="updateItem(${item.id},'name',this.value)" /><button class="dndbeyond-btn${hasUrl}" onclick="lookupOnDnDBeyond(${item.id})" title="Look up on D&amp;D Beyond${item.dndbeyondUrl ? ' (link saved)' : ''}" aria-label="Look up on D&amp;D Beyond">🔍</button><button class="dndbeyond-btn${hasUrl}" onclick="setDnDBeyondUrl(${item.id})" title="Set D&amp;D Beyond URL" aria-label="Set D&amp;D Beyond URL">🔗</button></div></td>
         <td><select onchange="updateItem(${item.id},'type',this.value)">${typeOptions}</select></td>
         <td><input type="number" value="${item.qty}"  min="0" onchange="updateItem(${item.id},'qty',this.value)" /></td>
         <td><input type="number" value="${item.weight}"   min="0" step="0.1" onchange="updateItem(${item.id},'weight',this.value)" /></td>
@@ -779,6 +779,7 @@
   const MAGIC_ITEM_TYPES = ['Potion', 'Scroll', 'Wand / Staff / Rod', 'Ring', 'Wondrous Item'];
 
   function getDnDBeyondSearchUrl(itemName, itemType) {
+    // Strip item bonuses (e.g. "+2") and parenthetical details (e.g. "(50 ft)") for cleaner search queries
     const query = encodeURIComponent(itemName.replace(/\+\d+/g, '').replace(/\(.*?\)/g, '').trim());
     if (MAGIC_ITEM_TYPES.includes(itemType)) {
       return 'https://www.dndbeyond.com/magic-items?filter-search=' + query;
@@ -799,7 +800,8 @@
   function setDnDBeyondUrl(id) {
     const item = items.find(i => i.id === id);
     if (!item) return;
-    const currentUrl = item.dndbeyondUrl || getDnDBeyondSearchUrl(item.name || '', item.type);
+    if (!item.name || !item.name.trim()) { showToast('⚠ Enter an item name first.'); return; }
+    const currentUrl = item.dndbeyondUrl || getDnDBeyondSearchUrl(item.name, item.type);
     const url = prompt('Enter D&D Beyond URL for this item (leave empty to clear):', currentUrl);
     if (url === null) return;
     item.dndbeyondUrl = url.trim();
