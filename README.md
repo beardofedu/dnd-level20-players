@@ -38,6 +38,10 @@ Open this file in any web browser — no server or internet connection required.
   - Equipped toggle (green highlight when active)
   - Attunement toggle — enforces the 3-item attunement limit
   - Running totals (qty, total weight, total value)
+- 🔍 **D&D Beyond Integration** — Look up any item on [D&D Beyond](https://www.dndbeyond.com) to confirm its existence and view its official description:
+  - Click 🔍 on any item to search D&D Beyond (auto-routes to equipment or magic-items based on item type)
+  - Click 🔗 to save a direct D&D Beyond URL for the item
+  - Saved links are highlighted and persist with save/export
 - 📝 **Notes** — Free-text area for quest items, party loot, reminders
 - 💾 **Persistence** — Save/load to browser `localStorage`, export to JSON, import from JSON
 
