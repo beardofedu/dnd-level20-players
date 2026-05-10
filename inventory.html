@@ -479,12 +479,12 @@
 
     items.forEach((item, idx) => {
       const qty = parseFloat(item.qty) || 0;
-      const wt  = parseFloat(item.wt)  || 0;
-      const val = parseFloat(item.val) || 0;
+      const weight = parseFloat(item.weight)  || 0;
+      const value = parseFloat(item.value) || 0;
 
       totalQty    += qty;
-      totalWeight += qty * wt;
-      totalValue  += qty * val;
+      totalWeight += qty * weight;
+      totalValue  += qty * value;
       if (item.attuned) attuned++;
 
       const tr = document.createElement('tr');
@@ -500,8 +500,8 @@
         <td><input type="text"   value="${esc(item.name)}"  placeholder="Item name"  onchange="updateItem(${item.id},'name',this.value)" /></td>
         <td><select onchange="updateItem(${item.id},'type',this.value)">${typeOptions}</select></td>
         <td><input type="number" value="${item.qty}"  min="0" onchange="updateItem(${item.id},'qty',this.value)" /></td>
-        <td><input type="number" value="${item.wt}"   min="0" step="0.1" onchange="updateItem(${item.id},'wt',this.value)" /></td>
-        <td><input type="number" value="${item.val}"  min="0" step="0.01" onchange="updateItem(${item.id},'val',this.value)" /></td>
+        <td><input type="number" value="${item.weight}"   min="0" step="0.1" onchange="updateItem(${item.id},'weight',this.value)" /></td>
+        <td><input type="number" value="${item.value}"  min="0" step="0.01" onchange="updateItem(${item.id},'value',this.value)" /></td>
         <td><input type="text"   value="${esc(item.notes)}" placeholder="Notes…" onchange="updateItem(${item.id},'notes',this.value)" /></td>
         <td style="text-align:center">
           <button class="equip-btn ${item.equipped ? 'equipped' : ''}"
@@ -578,8 +578,8 @@
       name:     defaults.name  || '',
       type:     defaults.type  || 'Adventuring Gear',
       qty:      defaults.qty   ?? 1,
-      wt:       defaults.wt    ?? 0,
-      val:      defaults.val   ?? 0,
+      weight:   defaults.weight    ?? 0,
+      value:    defaults.value   ?? 0,
       notes:    defaults.notes || '',
       equipped: defaults.equipped || false,
       attuned:  defaults.attuned  || false,
@@ -591,7 +591,7 @@
     const item = items.find(i => i.id === id);
     if (!item) return;
     item[field] = value;
-    if (['qty','wt','val'].includes(field)) render();
+    if (['qty','weight','value'].includes(field)) render();
   }
 
   function toggleBool(id, field) {
@@ -614,18 +614,18 @@
   function addSampleItems() {
     if (items.length > 0 && !confirm('This will add sample items to your existing list. Continue?')) return;
     const samples = [
-      { name: 'Longsword +2',         type: 'Weapon',           qty: 1,  wt: 3,    val: 400,   notes: 'Silvered blade; +2 to attack & damage', equipped: true,  attuned: true  },
-      { name: 'Plate Armor',          type: 'Armor',            qty: 1,  wt: 65,   val: 1500,  notes: 'AC 18',                                  equipped: true,  attuned: false },
-      { name: 'Shield',               type: 'Shield',           qty: 1,  wt: 6,    val: 10,    notes: '+2 AC',                                  equipped: true,  attuned: false },
-      { name: 'Cloak of Protection',  type: 'Wondrous Item',    qty: 1,  wt: 1,    val: 3500,  notes: '+1 AC and saving throws',                equipped: true,  attuned: true  },
-      { name: 'Healing Potion',       type: 'Potion',           qty: 4,  wt: 0.5,  val: 50,    notes: '2d4+2 HP',                               equipped: false, attuned: false },
-      { name: 'Greater Healing Pot.', type: 'Potion',           qty: 2,  wt: 0.5,  val: 150,   notes: '4d4+4 HP',                               equipped: false, attuned: false },
-      { name: 'Arrows',               type: 'Ammunition',       qty: 40, wt: 0.05, val: 0.05,  notes: 'Quiver of 20 = 1 lb',                    equipped: false, attuned: false },
-      { name: 'Rope, Hempen (50 ft)', type: 'Adventuring Gear', qty: 1,  wt: 10,   val: 1,     notes: '',                                       equipped: false, attuned: false },
-      { name: 'Tinderbox',            type: 'Adventuring Gear', qty: 1,  wt: 1,    val: 0.5,   notes: '',                                       equipped: false, attuned: false },
-      { name: 'Rations (10 days)',    type: 'Adventuring Gear', qty: 1,  wt: 20,   val: 5,     notes: '1 day = 2 lb / 0.5 gp',                  equipped: false, attuned: false },
-      { name: 'Backpack',             type: 'Container',        qty: 1,  wt: 5,    val: 2,     notes: 'Holds 30 lb / 1 cu ft',                  equipped: true,  attuned: false },
-      { name: 'Torch',                type: 'Adventuring Gear', qty: 6,  wt: 1,    val: 0.01,  notes: '1 hr light; 20 ft bright, 20 ft dim',    equipped: false, attuned: false },
+      { name: 'Longsword +2',         type: 'Weapon',           qty: 1,  weight: 3,    value: 400,   notes: 'Silvered blade; +2 to attack & damage', equipped: true,  attuned: true  },
+      { name: 'Plate Armor',          type: 'Armor',            qty: 1,  weight: 65,   value: 1500,  notes: 'AC 18',                                  equipped: true,  attuned: false },
+      { name: 'Shield',               type: 'Shield',           qty: 1,  weight: 6,    value: 10,    notes: '+2 AC',                                  equipped: true,  attuned: false },
+      { name: 'Cloak of Protection',  type: 'Wondrous Item',    qty: 1,  weight: 1,    value: 3500,  notes: '+1 AC and saving throws',                equipped: true,  attuned: true  },
+      { name: 'Healing Potion',       type: 'Potion',           qty: 4,  weight: 0.5,  value: 50,    notes: '2d4+2 HP',                               equipped: false, attuned: false },
+      { name: 'Greater Healing Pot.', type: 'Potion',           qty: 2,  weight: 0.5,  value: 150,   notes: '4d4+4 HP',                               equipped: false, attuned: false },
+      { name: 'Arrows',               type: 'Ammunition',       qty: 40, weight: 0.05, value: 0.05,  notes: 'Quiver of 20 = 1 lb',                    equipped: false, attuned: false },
+      { name: 'Rope, Hempen (50 ft)', type: 'Adventuring Gear', qty: 1,  weight: 10,   value: 1,     notes: '',                                       equipped: false, attuned: false },
+      { name: 'Tinderbox',            type: 'Adventuring Gear', qty: 1,  weight: 1,    value: 0.5,   notes: '',                                       equipped: false, attuned: false },
+      { name: 'Rations (10 days)',    type: 'Adventuring Gear', qty: 1,  weight: 20,   value: 5,     notes: '1 day = 2 lb / 0.5 gp',                  equipped: false, attuned: false },
+      { name: 'Backpack',             type: 'Container',        qty: 1,  weight: 5,    value: 2,     notes: 'Holds 30 lb / 1 cu ft',                  equipped: true,  attuned: false },
+      { name: 'Torch',                type: 'Adventuring Gear', qty: 6,  weight: 1,    value: 0.01,  notes: '1 hr light; 20 ft bright, 20 ft dim',    equipped: false, attuned: false },
     ];
     samples.forEach(s => addItem(s));
     document.getElementById('strScore').value = 18;
@@ -754,7 +754,7 @@
 
   // ── Helpers ───────────────────────────────────────
   function esc(str) {
-    return String(str || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    return String(str || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
 
   // ── Wire up live-update events ────────────────────

@@ -76,7 +76,7 @@ When you drop to 0 HP you fall unconscious and start making **Death Saving Throw
 | **Short Rest (≥1 hour)** | Spend Hit Dice (d[class size] + CON mod) to recover HP. |
 | **Long Rest (≥8 hours)** | Regain all HP and recover half your max Hit Dice (minimum 1). Resets most spell slots & class features. |
 | **Stabilize** | DC 10 Wisdom (Medicine) check on an unconscious creature stops death saves without restoring HP. |
-| **Healing Potion** | Action to drink (or Bonus Action for yourself, per many tables): 2d4+2 HP. Greater = 4d4+4. Superior = 8d4+8. Supreme = 10d4+20. |
+| **Healing Potion** | Action to drink (or Bonus Action for yourself — this is a common house rule; check with your DM): 2d4+2 HP. Greater = 4d4+4. Superior = 8d4+8. Supreme = 10d4+20. |
 
 ---
 
